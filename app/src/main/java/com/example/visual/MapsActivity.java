@@ -78,6 +78,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
         mImportButton.setEnabled(true);
         mImportButton.setOnClickListener(this);
+        mDeleteButton.setOnClickListener(this);
 
         // Add a marker in Sydney and move the camera
 //        LatLng sydney = new LatLng(-34, 151);
@@ -88,7 +89,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //create geojson layer via the file local and load it on the map
     private void createLayer() {
         try {
-            layer = new GeoJsonLayer(mMap, R.raw.geojsonfile_69, this);
+            layer = new GeoJsonLayer(mMap, R.raw.geojsonfile1, this);
             GeoJsonPolygonStyle geoJsonPolygonStyle = layer.getDefaultPolygonStyle();
             geoJsonPolygonStyle.setStrokeWidth(10);
             geoJsonPolygonStyle.setStrokeColor(Color.RED);
@@ -100,20 +101,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             Log.e(mLogTag, "GeoJSON file could not be converted to a JSONObject");
         }
         Log.i("IMPORT","success");
+
+        //move center of the map to the first point
         String lat="",lng="";
+        int count=0;
         for (GeoJsonFeature feature : layer.getFeatures()) {
             if (feature != null) {
                 String geo = feature.getGeometry().getGeometryObject().toString();
                 lat = geo.substring(geo.indexOf("(")+1,geo.indexOf(","));
                 lng = geo.substring(geo.indexOf(",")+1,geo.indexOf(")"));
-                break;
+                LatLng firstPoint = new LatLng(Double.valueOf(lat),Double.valueOf(lng));
+                mMap.addMarker(new MarkerOptions().position(firstPoint).title("Marker of Point No"+count));
+                if (count == 0) {
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(firstPoint));
+                }
+                count++;
             }
         }
-        //move center of the map to the first point
-        LatLng firstPoint = new LatLng(Double.valueOf(lat),Double.valueOf(lng));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(firstPoint));
-
-        mDeleteButton.setOnClickListener(this);
     }
 
     private void addGeoJsonLayerToMap(GeoJsonLayer layer) {
