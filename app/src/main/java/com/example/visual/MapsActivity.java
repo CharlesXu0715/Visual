@@ -2,7 +2,9 @@ package com.example.visual;
 
 import androidx.fragment.app.FragmentActivity;
 
+import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -11,6 +13,22 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.visual.databinding.ActivityMapsBinding;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.maps.android.data.Feature;
+import com.google.maps.android.data.geojson.GeoJsonFeature;
+import com.google.maps.android.data.geojson.GeoJsonLayer;
+import com.google.maps.android.data.geojson.GeoJsonLineString;
+import com.google.maps.android.data.geojson.GeoJsonLineStringStyle;
+import com.google.maps.android.data.geojson.GeoJsonPointStyle;
+import com.google.maps.android.data.geojson.GeoJsonPolygonStyle;
+
+import org.json.JSONException;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -43,9 +61,45 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        try {
+            GeoJsonLayer layer = new GeoJsonLayer(mMap, R.raw.geojsonfile1, this);
+
+//// Create a new feature containing a linestring
+//            List<LatLng> lineStringArray = new ArrayList<LatLng>();
+//            lineStringArray.add(new LatLng(0, 0));
+//            lineStringArray.add(new LatLng(50, 50));
+//            GeoJsonLineString lineString = new GeoJsonLineString(lineStringArray);
+//            GeoJsonFeature lineStringFeature = new GeoJsonFeature(lineString, null, null, null);
+//
+//// Set the color of the linestring to red
+//            GeoJsonLineStringStyle lineStringStyle = new GeoJsonLineStringStyle();
+//            lineStringStyle.setColor(Color.RED);
+//
+//// Set the style of the feature
+//            lineStringFeature.setLineStringStyle(lineStringStyle);
+
+//            for (GeoJsonFeature feature : layer.getFeatures()) {
+//                GeoJsonPolygonStyle polygonStyle = new GeoJsonPolygonStyle();
+//                polygonStyle.setFillColor(android.graphics.Color.RED);
+//                polygonStyle.setStrokeColor(android.graphics.Color.RED);
+//                feature.setPolygonStyle(polygonStyle);
+//            }
+//            GeoJsonPolygonStyle polygonStyle = new GeoJsonPolygonStyle();
+//            polygonStyle.setFillColor(android.graphics.Color.RED);
+//            polygonStyle.setStrokeColor(android.graphics.Color.RED);
+            layer.addLayerToMap();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Log.i("IMPORT","success");
+
+
+
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+//        LatLng sydney = new LatLng(-34, 151);
+//        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+//        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 }
