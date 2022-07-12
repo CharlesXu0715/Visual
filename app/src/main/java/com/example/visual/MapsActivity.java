@@ -5,6 +5,9 @@ import androidx.fragment.app.FragmentActivity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -31,10 +34,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,View.OnClickListener {
 
     private GoogleMap mMap;
     private ActivityMapsBinding binding;
+    private TextView mGreetingTextView;
+    private Button mImportButton;
+    private Button mDeleteButton;
+    private GeoJsonLayer layer;
+    private boolean imported=false;
+
+    private final static String mLogTag = "GeoJsonVisualise";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +52,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         binding = ActivityMapsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        mGreetingTextView = findViewById(R.id.maps_textview_greeting);
+        mImportButton = findViewById(R.id.maps_button_import);
+        mDeleteButton = findViewById(R.id.maps_button_delete);
+        mImportButton.setEnabled(false);
+        mDeleteButton.setEnabled(false);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -61,23 +77,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        //create geojson layer via the file local and load it on the map
-        try {
-            GeoJsonLayer layer = new GeoJsonLayer(mMap, R.raw.geojsonfile2, this);
-            GeoJsonPolygonStyle geoJsonPolygonStyle = layer.getDefaultPolygonStyle();
-            geoJsonPolygonStyle.setStrokeWidth(10);
-            geoJsonPolygonStyle.setStrokeColor(Color.RED);
-            addGeoJsonLayerToMap(layer);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        Log.i("IMPORT","success");
-
-
-
+        mImportButton.setEnabled(true);
+        mImportButton.setOnClickListener(this);
 
         // Add a marker in Sydney and move the camera
 //        LatLng sydney = new LatLng(-34, 151);
@@ -85,9 +86,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
     }
 
+    //create geojson layer via the file local and load it on the map
+    private void createLayer() {
+        try {
+            layer = new GeoJsonLayer(mMap, R.raw.usa, this);
+            GeoJsonPolygonStyle geoJsonPolygonStyle = layer.getDefaultPolygonStyle();
+            geoJsonPolygonStyle.setStrokeWidth(10);
+            geoJsonPolygonStyle.setStrokeColor(Color.RED);
+            addGeoJsonLayerToMap(layer);
+
+        } catch (IOException e) {
+            Log.e(mLogTag, "GeoJSON file could not be read");
+        } catch (JSONException e) {
+            Log.e(mLogTag, "GeoJSON file could not be converted to a JSONObject");
+        }
+        Log.i("IMPORT","success");
+        imported=true;
+        mDeleteButton.setOnClickListener(this);
+    }
+
     private void addGeoJsonLayerToMap(GeoJsonLayer layer) {
 
-        addColorsToMarkers(layer);
+//        addColorsToMarkers(layer);
         layer.addLayerToMap();
         // Demonstrate receiving features via GeoJsonLayer clicks.
 //        layer.setOnFeatureClickListener(new GeoJsonLayer.GeoJsonOnFeatureClickListener() {
@@ -107,6 +127,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             if (feature.getGeometry()!=null) {
                 Log.e("info",feature.getGeometry().toString());
             }
+        }
+    }
+
+    @Override
+    public void onClick(View view) {
+        if (view == mImportButton && imported == false) {
+            createLayer();
+            mImportButton.setEnabled(false);
+            mDeleteButton.setEnabled(true);
+            imported = true;
+        }
+        else if (view == mDeleteButton && imported) {
+            layer.removeLayerFromMap();
+            mDeleteButton.setEnabled(false);
+            mImportButton.setEnabled(true);
+            imported = false;
         }
     }
 }
