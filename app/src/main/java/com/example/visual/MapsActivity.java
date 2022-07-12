@@ -5,6 +5,7 @@ import androidx.fragment.app.FragmentActivity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -60,34 +61,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
+        //create geojson layer via the file local and load it on the map
         try {
-            GeoJsonLayer layer = new GeoJsonLayer(mMap, R.raw.geojsonfile1, this);
+            GeoJsonLayer layer = new GeoJsonLayer(mMap, R.raw.geojsonfile2, this);
+            GeoJsonPolygonStyle geoJsonPolygonStyle = layer.getDefaultPolygonStyle();
+            geoJsonPolygonStyle.setStrokeWidth(10);
+            geoJsonPolygonStyle.setStrokeColor(Color.RED);
+            addGeoJsonLayerToMap(layer);
 
-//// Create a new feature containing a linestring
-//            List<LatLng> lineStringArray = new ArrayList<LatLng>();
-//            lineStringArray.add(new LatLng(0, 0));
-//            lineStringArray.add(new LatLng(50, 50));
-//            GeoJsonLineString lineString = new GeoJsonLineString(lineStringArray);
-//            GeoJsonFeature lineStringFeature = new GeoJsonFeature(lineString, null, null, null);
-//
-//// Set the color of the linestring to red
-//            GeoJsonLineStringStyle lineStringStyle = new GeoJsonLineStringStyle();
-//            lineStringStyle.setColor(Color.RED);
-//
-//// Set the style of the feature
-//            lineStringFeature.setLineStringStyle(lineStringStyle);
-
-//            for (GeoJsonFeature feature : layer.getFeatures()) {
-//                GeoJsonPolygonStyle polygonStyle = new GeoJsonPolygonStyle();
-//                polygonStyle.setFillColor(android.graphics.Color.RED);
-//                polygonStyle.setStrokeColor(android.graphics.Color.RED);
-//                feature.setPolygonStyle(polygonStyle);
-//            }
-//            GeoJsonPolygonStyle polygonStyle = new GeoJsonPolygonStyle();
-//            polygonStyle.setFillColor(android.graphics.Color.RED);
-//            polygonStyle.setStrokeColor(android.graphics.Color.RED);
-            layer.addLayerToMap();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
@@ -97,9 +78,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
 
+
         // Add a marker in Sydney and move the camera
 //        LatLng sydney = new LatLng(-34, 151);
 //        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
 //        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+    }
+
+    private void addGeoJsonLayerToMap(GeoJsonLayer layer) {
+
+        addColorsToMarkers(layer);
+        layer.addLayerToMap();
+        // Demonstrate receiving features via GeoJsonLayer clicks.
+//        layer.setOnFeatureClickListener(new GeoJsonLayer.GeoJsonOnFeatureClickListener() {
+//            @Override
+//            public void onFeatureClick(Feature feature) {
+//                Toast.makeText(MapsActivity.this,
+//                        "Feature clicked: " + feature.getProperty("title"),
+//                        Toast.LENGTH_SHORT).show();
+//            }
+//
+//        });
+    }
+
+    private void addColorsToMarkers(GeoJsonLayer layer) {
+
+        for (GeoJsonFeature feature : layer.getFeatures()) {
+            if (feature.getGeometry()!=null) {
+                Log.e("info",feature.getGeometry().toString());
+            }
+        }
     }
 }
