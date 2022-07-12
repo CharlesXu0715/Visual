@@ -42,7 +42,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Button mImportButton;
     private Button mDeleteButton;
     private GeoJsonLayer layer;
-    private boolean imported=false;
 
     private final static String mLogTag = "GeoJsonVisualise";
 
@@ -89,7 +88,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //create geojson layer via the file local and load it on the map
     private void createLayer() {
         try {
-            layer = new GeoJsonLayer(mMap, R.raw.usa, this);
+            layer = new GeoJsonLayer(mMap, R.raw.geojsonfile_69, this);
             GeoJsonPolygonStyle geoJsonPolygonStyle = layer.getDefaultPolygonStyle();
             geoJsonPolygonStyle.setStrokeWidth(10);
             geoJsonPolygonStyle.setStrokeColor(Color.RED);
@@ -101,7 +100,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             Log.e(mLogTag, "GeoJSON file could not be converted to a JSONObject");
         }
         Log.i("IMPORT","success");
-        imported=true;
+        String lat="",lng="";
+        for (GeoJsonFeature feature : layer.getFeatures()) {
+            if (feature != null) {
+                String geo = feature.getGeometry().getGeometryObject().toString();
+                lat = geo.substring(geo.indexOf("(")+1,geo.indexOf(","));
+                lng = geo.substring(geo.indexOf(",")+1,geo.indexOf(")"));
+                break;
+            }
+        }
+        //move center of the map to the first point
+        LatLng firstPoint = new LatLng(Double.valueOf(lat),Double.valueOf(lng));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(firstPoint));
+
         mDeleteButton.setOnClickListener(this);
     }
 
@@ -132,17 +143,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onClick(View view) {
-        if (view == mImportButton && imported == false) {
+        if (view == mImportButton) {
             createLayer();
             mImportButton.setEnabled(false);
             mDeleteButton.setEnabled(true);
-            imported = true;
         }
-        else if (view == mDeleteButton && imported) {
+        else if (view == mDeleteButton) {
             layer.removeLayerFromMap();
             mDeleteButton.setEnabled(false);
             mImportButton.setEnabled(true);
-            imported = false;
         }
     }
 }
