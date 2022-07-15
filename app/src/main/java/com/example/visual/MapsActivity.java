@@ -72,9 +72,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ActivityMapsBinding binding;
     private TextView mGreetingTextView;
     private Button mImportButton;
-    private Button mDeleteButton;
+    private Button mClearButton;
     private GeoJsonLayer layer;
     private String filePath;
+    private List<GeoJsonLayer> mGeoJsonLayers = new ArrayList<GeoJsonLayer>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,9 +88,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         mGreetingTextView = findViewById(R.id.maps_textview_greeting);
         mImportButton = findViewById(R.id.maps_button_import);
-        mDeleteButton = findViewById(R.id.maps_button_delete);
+        mClearButton = findViewById(R.id.maps_button_clear);
         mImportButton.setEnabled(false);
-        mDeleteButton.setEnabled(false);
+        mClearButton.setEnabled(false);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -111,22 +112,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
         mImportButton.setEnabled(true);
         mImportButton.setOnClickListener(this);
-        mDeleteButton.setOnClickListener(this);
+        mClearButton.setOnClickListener(this);
 
     }
 
     //create geojson layer via the file local and load it on the map
-    private void createLayer() {
-        try {
-            //load file stocked in raw
-            layer = new GeoJsonLayer(mMap, R.raw.geojsonfile1, this);
-            addGeoJsonLayerToMap(layer);
-        } catch (IOException e) {
-            Log.e(mLogTag, "GeoJSON file could not be read");
-        } catch (JSONException e) {
-            Log.e(mLogTag, "GeoJSON file could not be converted to a JSONObject");
-        }
-        Log.i("IMPORT", "success");
+    private void addMarker() {
+//        try {
+//            //load file stocked in raw
+//            layer = new GeoJsonLayer(mMap, R.raw.geojsonfile1, this);
+//            addGeoJsonLayerToMap(layer);
+//        } catch (IOException e) {
+//            Log.e(mLogTag, "GeoJSON file could not be read");
+//        } catch (JSONException e) {
+//            Log.e(mLogTag, "GeoJSON file could not be converted to a JSONObject");
+//        }
+//        Log.i("IMPORT", "success");
 
         //move center of the map to the first point
         String lat = "", lng = "";
@@ -170,8 +171,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onClick(View view) {
         if (view == mImportButton) {
-            //from files in raw
-//            createLayer();
+//            //from files in raw
+//            try {
+//                //load file stocked in raw
+//                layer = new GeoJsonLayer(mMap, R.raw.geojsonfile1, this);
+//                addGeoJsonLayerToMap(layer);
+//            } catch (IOException e) {
+//                Log.e(mLogTag, "GeoJSON file could not be read");
+//            } catch (JSONException e) {
+//                Log.e(mLogTag, "GeoJSON file could not be converted to a JSONObject");
+//            }
+//            Log.i("IMPORT", "success");
+//            addMarker();
+
 
             //from files in storage
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -179,13 +191,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             startActivityForResult(intent, FILE_SELECTOR_CODE);
 
-            mImportButton.setEnabled(false);
-            mDeleteButton.setEnabled(true);
-        } else if (view == mDeleteButton) {
-            layer.removeLayerFromMap();
+
+
+//            mImportButton.setEnabled(false);
+            mClearButton.setEnabled(true);
+        } else if (view == mClearButton) {
+            for (GeoJsonLayer l : mGeoJsonLayers) {
+                l.removeLayerFromMap();
+            }
             mMap.clear();
-            mDeleteButton.setEnabled(false);
-            mImportButton.setEnabled(true);
+
+            mClearButton.setEnabled(false);
+//            mImportButton.setEnabled(true);
         }
     }
 
@@ -222,14 +239,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         Log.e("filepath", upLoadFilePath);
                         Log.e("filename", upLoadFileName);
                         String content  = "";
-                        if (file.getName().endsWith(".json")) {//格式为json文件
+                        if (file.getName().endsWith(".json")) {//make sure json files
                             try {
                                 InputStream instream = new FileInputStream(file);
                                 if (instream != null) {
                                     InputStreamReader inputreader = new InputStreamReader(instream, "GBK");
                                     BufferedReader buffreader = new BufferedReader(inputreader);
                                     String line="";
-                                    //分行读取
+                                    //read them line by line!
                                     while (( line = buffreader.readLine()) != null) {
                                         content += line + "\n";
                                     }
@@ -238,6 +255,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     JSONObject jsonObject=new JSONObject(content);
                                     layer = new GeoJsonLayer(mMap,jsonObject);
                                     addGeoJsonLayerToMap(layer);
+                                    mGeoJsonLayers.add(layer);
+                                    addMarker();
                                 }
                             }
                             catch (java.io.FileNotFoundException e) {

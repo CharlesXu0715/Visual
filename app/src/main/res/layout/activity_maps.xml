@@ -36,8 +36,8 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:text="DELETE"
-            android:id="@+id/maps_button_delete"
+            android:text="CLEAR"
+            android:id="@+id/maps_button_clear"
             android:layout_weight="50"/>
 
     </LinearLayout>
